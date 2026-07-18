@@ -1,0 +1,60 @@
+---
+title: "Introduction"
+description: "Age-verify your users without ever touching their identity documents."
+---
+
+AnonAge lets your site or app confirm a user meets an age requirement — **18+**, **21+**,
+and so on — while learning **only a yes/no**. You never see their name, date of birth, or
+documents; identity verification happens in the user's AnonAge wallet against a KYC provider,
+not on your servers.
+
+## How it works
+
+<Steps>
+  <Step title="Open a session">
+    Your server calls the API with an age requirement and a callback URL, and gets back an
+    opaque `session_id` + `nonce`.
+  </Step>
+  <Step title="Show the user a code">
+    You render a QR code (or a tap-to-verify link) containing only `{ session_id, nonce }`.
+    Your API key and callback URL never leave your server.
+  </Step>
+  <Step title="The user approves in their wallet">
+    They scan/tap and consent to share a yes/no. AnonAge computes the result **server-side**
+    from their already-verified age — never from anything the client sends.
+  </Step>
+  <Step title="You receive a signed result">
+    AnonAge POSTs your callback URL with a **signed** `above_age_required` boolean and a
+    receipt id. You verify the signature and unlock your content.
+  </Step>
+</Steps>
+
+## What you get — and don't
+
+| You receive | You never receive |
+| --- | --- |
+| `above_age_required` (true/false) | Name |
+| A `receipt_id` for your records | Date of birth |
+| An `assurance` level (KYC vs family-asserted) | ID documents / selfie |
+
+<Note>
+The result is always computed on AnonAge's servers from a verified age claim. A client can't
+claim to be older than they are — closing the classic "trust the client's age" hole.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Integrate the full flow in about 10 minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Create and use API keys.
+  </Card>
+  <Card title="Callbacks" icon="signature" href="/webhooks">
+    Verify the signed result (with copy-paste recipes).
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Every endpoint, request and response.
+  </Card>
+</CardGroup>

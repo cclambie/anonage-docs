@@ -1,0 +1,135 @@
+---
+title: "Quickstart"
+description: "Integrate the full age-verification flow in about 10 minutes."
+---
+
+By the end you'll open a session, show a QR / tap-link, and receive a verified, signed result.
+
+<Note>
+Base URL: `https://api.anonage.io` (production, coming soon) or `https://dev1api.anonage.io`
+(development). Examples below use the production URL.
+</Note>
+
+## 1. Get an API key
+
+In the [Console](https://anonage.io/console) → **API Keys**, create a key. You'll see two
+secrets **once**:
+
+- **API key** (`anonage_sk_…`) — sent as `X-API-Key` from your server.
+- **Signing secret** (`whsec_…`) — used to verify callbacks.
+
+Store both. See [Authentication](/authentication) for details.
+
+## 2. Open a session (server-side)
+
+Never put your API key in the browser. Create the session from your backend:
+
+<CodeGroup>
+
+```js Node (Express)
+app.post("/anonage/start", async (req, res) => {
+  const r = await fetch("https://api.anonage.io/api/age-verification/session", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": process.env.ANONAGE_API_KEY,
+    },
+    body: JSON.stringify({
+      age_required: 18,
+      callback_url: "https://shop.example/anonage/callback",
+    }),
+  });
+  const { data } = await r.json();
+  // Send ONLY the opaque reference to the browser.
+  res.json({ session_id: data.session_id, nonce: data.nonce });
+});
+```
+
+```php PHP
+$ch = curl_init("https://api.anonage.io/api/age-verification/session");
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_POST => true,
+  CURLOPT_HTTPHEADER => [
+    "Content-Type: application/json",
+    "X-API-Key: " . getenv("ANONAGE_API_KEY"),
+  ],
+  CURLOPT_POSTFIELDS => json_encode([
+    "age_required" => 18,
+    "callback_url" => "https://shop.example/anonage/callback",
+  ]),
+]);
+$data = json_decode(curl_exec($ch), true)["data"];
+echo json_encode(["session_id" => $data["session_id"], "nonce" => $data["nonce"]]);
+```
+
+```python Python (requests)
+r = requests.post(
+    "https://api.anonage.io/api/age-verification/session",
+    headers={"X-API-Key": os.environ["ANONAGE_API_KEY"]},
+    json={"age_required": 18, "callback_url": "https://shop.example/anonage/callback"},
+)
+data = r.json()["data"]
+return {"session_id": data["session_id"], "nonce": data["nonce"]}
+```
+
+</CodeGroup>
+
+## 3. Show the user a QR or tap-link
+
+Encode the opaque reference. On mobile, a tap-link opens the AnonAge app; on desktop, render
+a QR the user scans.
+
+```js Browser
+// QR payload (use any QR library):
+const qrData = JSON.stringify({ v: 1, session_id, nonce, api_base: "https://api.anonage.io" });
+
+// Tap-to-verify link (opens the app on the same phone):
+const tapLink =
+  `https://anonage.io/verify?session_id=${session_id}` +
+  `&nonce=${nonce}&api_base=${encodeURIComponent("https://api.anonage.io")}&age_required=18`;
+```
+
+## 4. Receive the signed result
+
+AnonAge POSTs your `callback_url` when the user approves. **Verify the signature**, then act:
+
+```js Node (Express)
+import crypto from "crypto";
+
+app.post("/anonage/callback", express.raw({ type: "*/*" }), (req, res) => {
+  const raw = req.body.toString("utf8");
+  const [t, v1] = req.get("X-AnonAge-Signature").split(",").map((p) => p.split("=")[1]);
+  const expected = crypto
+    .createHmac("sha256", process.env.ANONAGE_SIGNING_SECRET)
+    .update(`${t}.${raw}`)
+    .digest("hex");
+
+  if (Math.abs(Date.now() / 1000 - Number(t)) > 300 ||
+      !crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(v1))) {
+    return res.status(401).end();
+  }
+
+  const { session_id, above_age_required } = JSON.parse(raw);
+  // ...mark session_id verified/rejected in your store...
+  res.json({ ok: true });
+});
+```
+
+<Warning>
+Read the **raw** request body for signature verification — re-serialising the JSON changes the
+bytes and breaks the HMAC. Full recipes (PHP, Python, Ruby) are in [Callbacks](/webhooks).
+</Warning>
+
+## 5. Poll as a fallback
+
+If a callback is missed, poll the session:
+
+```bash
+curl https://api.anonage.io/api/age-verification/session/SESSION_ID \
+  -H "X-API-Key: $ANONAGE_API_KEY"
+# -> { "data": { "status": "APPROVED", "above_age_required": true, ... } }
+```
+
+That's the whole loop. Next: harden your [callback handling](/webhooks) and try it end-to-end
+in [test mode](/testing).

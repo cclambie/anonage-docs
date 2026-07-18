@@ -1,0 +1,71 @@
+---
+title: "API Reference"
+description: "Base URLs, response format, authentication, and conventions."
+---
+
+The AnonAge API is a small REST API over JSON. It covers both the **integration** endpoints
+(open verification sessions, manage keys, read usage) and the **platform** endpoints the AnonAge
+apps use (auth, users, KYC).
+
+## Base URLs
+
+| Environment | URL |
+| --- | --- |
+| Production (coming soon) | `https://api.anonage.io` |
+| Development | `https://dev1api.anonage.io` |
+
+## Response format
+
+Every response uses the same envelope:
+
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "…",
+  "error": "…",
+  "errors": []
+}
+```
+
+## Authentication
+
+| Header | Used for | Auth |
+| --- | --- | --- |
+| `X-API-Key: anonage_sk_…` | Verification endpoints (`/api/age-verification/*`) | Merchant key (server-side only) |
+| `Authorization: Bearer <jwt>` | Auth-protected: Users, KYC, API keys, Usage | Account JWT from `/api/auth/login` |
+
+See [Authentication](/authentication) for merchant keys.
+
+## Endpoint groups
+
+- **Auth** — register, login, email verification, password reset.
+- **Users** — profile, password, email, account.
+- **KYC** — Sumsub applicant, check, status, hosted link.
+- **Verification** — open a session, poll a session *(merchant key)*.
+- **API keys** — create, list, revoke *(business account)*.
+- **Usage** — summary, by-key, session log, CSV export *(business account)*.
+- **Webhooks** — the inbound Sumsub webhook, and the outbound
+  [result callback](/webhooks) AnonAge sends you.
+
+## Error codes
+
+| Code | Meaning |
+| --- | --- |
+| 400 | Bad request — invalid input |
+| 401 | Unauthorized — invalid/missing token or key |
+| 403 | Forbidden — insufficient permissions (e.g. wrong account type) |
+| 404 | Not found |
+| 409 | Conflict — already exists (e.g. email taken) |
+| 410 | Gone — session expired |
+| 422 | Validation failed |
+| 429 | Too many requests — rate limited |
+| 500 | Internal server error |
+
+## Rate limiting
+
+- **Default:** 100 requests / 15 min / IP.
+- **Auth endpoints:** 5 requests / 15 min / IP.
+- **Webhooks:** not rate limited.
+
+New to the API? Start with the [Quickstart](/quickstart).

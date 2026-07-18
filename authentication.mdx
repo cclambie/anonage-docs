@@ -1,0 +1,54 @@
+---
+title: "Authentication"
+description: "API keys, the two secrets, and how to keep them safe."
+---
+
+## API keys
+
+Create keys in the [Console](https://anonage.io/console) → **API Keys** (verified business
+accounts only). Each key gives you two secrets, shown **once** at creation:
+
+<CardGroup cols={2}>
+  <Card title="API key" icon="key">
+    `anonage_sk_…` — identifies your account on the verification endpoints. Send it as the
+    `X-API-Key` header.
+  </Card>
+  <Card title="Signing secret" icon="signature">
+    `whsec_…` — used to verify the HMAC signature on callbacks. See [Callbacks](/webhooks).
+  </Card>
+</CardGroup>
+
+We store only a **hash** of your API key, so it can't be recovered — if you lose it, revoke and
+create a new one.
+
+## Using your key
+
+```bash
+curl https://api.anonage.io/api/age-verification/session \
+  -H "X-API-Key: anonage_sk_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "age_required": 18, "callback_url": "https://shop.example/anonage/callback" }'
+```
+
+<Warning>
+The API key is a **server-side secret**. Never ship it to the browser or a mobile app, and never
+put it in a QR code — open sessions from your backend and hand the browser only the opaque
+`session_id` + `nonce`.
+</Warning>
+
+## Account vs key auth
+
+| Header | Used for | Auth |
+| --- | --- | --- |
+| `X-API-Key: anonage_sk_…` | Verification endpoints (`/api/age-verification/*`) | Your merchant key |
+| `Authorization: Bearer <jwt>` | Key management & usage (`/api/keys`, `/api/usage/*`) | Your dashboard session |
+
+## Rotating & revoking
+
+Revoke a key in the Console at any time — sites using it stop verifying immediately. To rotate
+with zero downtime, create the new key, deploy it, then revoke the old one.
+
+<Note>
+**Roadmap:** separate **test** and **live** keys (test keys run against sandbox and don't bill),
+per-key allowed origins, and signing-secret rotation with a grace window.
+</Note>

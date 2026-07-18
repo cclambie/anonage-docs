@@ -1,0 +1,140 @@
+---
+title: "Callbacks"
+description: "Receive the signed verification result and verify its signature."
+---
+
+When the user approves in their wallet, AnonAge sends a `POST` to the `callback_url` you set when
+opening the session.
+
+## The payload
+
+```json
+{
+  "session_id": "cmr…",
+  "above_age_required": true,
+  "age_required": 18,
+  "assurance": "KYC_VERIFIED",
+  "receipt_id": "rcpt_…",
+  "verified_at": 1784265683
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `above_age_required` | The yes/no you act on. |
+| `age_required` | The threshold that was checked. |
+| `assurance` | `KYC_VERIFIED` (identity + liveness) or `FAMILY_ASSERTED` (guardian-vouched). |
+| `receipt_id` | Opaque id for your records / audit. |
+| `verified_at` | Unix seconds. |
+
+Respond with any `2xx` to acknowledge. If your endpoint is unreachable, use
+[polling](/api-reference/introduction) as a fallback.
+
+## Verify the signature
+
+Every callback carries a signature header:
+
+```
+X-AnonAge-Signature: t=1784265683,v1=<hex hmac-sha256>
+```
+
+Recompute `HMAC_SHA256(signing_secret, "{t}.{rawBody}")` over the **raw** request body and compare
+it to `v1` in constant time. Reject the request if it doesn't match or if `t` is more than a few
+minutes old (replay protection).
+
+<Warning>
+Verify against the **raw bytes** of the body. Frameworks that parse JSON and re-serialise it will
+change whitespace/key order and break the HMAC — capture the raw body before parsing.
+</Warning>
+
+<CodeGroup>
+
+```js Node (Express)
+import crypto from "crypto";
+
+// express.raw keeps the unparsed body for signature verification.
+app.post("/anonage/callback", express.raw({ type: "*/*" }), (req, res) => {
+  const raw = req.body.toString("utf8");
+  const parts = Object.fromEntries(
+    req.get("X-AnonAge-Signature").split(",").map((p) => p.split("="))
+  );
+  const expected = crypto
+    .createHmac("sha256", process.env.ANONAGE_SIGNING_SECRET)
+    .update(`${parts.t}.${raw}`)
+    .digest("hex");
+
+  const fresh = Math.abs(Date.now() / 1000 - Number(parts.t)) <= 300;
+  const valid =
+    expected.length === parts.v1.length &&
+    crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(parts.v1));
+
+  if (!fresh || !valid) return res.status(401).end();
+
+  const body = JSON.parse(raw);
+  // ...record body.session_id -> body.above_age_required...
+  res.json({ ok: true });
+});
+```
+
+```php PHP
+<?php
+$raw = file_get_contents("php://input");
+$header = $_SERVER["HTTP_X_ANONAGE_SIGNATURE"] ?? "";
+parse_str(str_replace(",", "&", $header), $sig); // -> $sig["t"], $sig["v1"]
+
+$expected = hash_hmac("sha256", $sig["t"] . "." . $raw, getenv("ANONAGE_SIGNING_SECRET"));
+$fresh = abs(time() - (int) $sig["t"]) <= 300;
+
+if (!$fresh || !hash_equals($expected, $sig["v1"] ?? "")) {
+    http_response_code(401);
+    exit;
+}
+
+$body = json_decode($raw, true);
+// ...record $body["session_id"] -> $body["above_age_required"]...
+echo json_encode(["ok" => true]);
+```
+
+```python Python (Flask)
+import hmac, hashlib, time
+from flask import request, abort
+
+@app.post("/anonage/callback")
+def callback():
+    raw = request.get_data()  # raw bytes
+    parts = dict(p.split("=", 1) for p in request.headers["X-AnonAge-Signature"].split(","))
+    expected = hmac.new(
+        os.environ["ANONAGE_SIGNING_SECRET"].encode(),
+        f"{parts['t']}.".encode() + raw,
+        hashlib.sha256,
+    ).hexdigest()
+
+    fresh = abs(time.time() - int(parts["t"])) <= 300
+    if not fresh or not hmac.compare_digest(expected, parts["v1"]):
+        abort(401)
+
+    body = request.get_json()
+    # ...record body["session_id"] -> body["above_age_required"]...
+    return {"ok": True}
+```
+
+```ruby Ruby (Rails)
+raw = request.raw_post
+parts = request.headers["X-AnonAge-Signature"].split(",").map { |p| p.split("=", 2) }.to_h
+expected = OpenSSL::HMAC.hexdigest("SHA256", ENV["ANONAGE_SIGNING_SECRET"], "#{parts['t']}.#{raw}")
+
+fresh = (Time.now.to_i - parts["t"].to_i).abs <= 300
+head :unauthorized and return unless fresh &&
+  ActiveSupport::SecurityUtils.secure_compare(expected, parts["v1"])
+
+body = JSON.parse(raw)
+# ...record body["session_id"] -> body["above_age_required"]...
+render json: { ok: true }
+```
+
+</CodeGroup>
+
+<Note>
+Treat `above_age_required` as authoritative only after the signature checks pass. Never trust a
+callback whose signature you couldn't verify.
+</Note>
