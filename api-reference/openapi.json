@@ -3,31 +3,54 @@
   "info": {
     "title": "AnonAge API",
     "version": "1.0.0",
-    "description": "The AnonAge platform + integration API. Age-verify users without handling their identity documents (Verification / API keys / Usage), plus the account and KYC endpoints the AnonAge apps use (Auth / Users / KYC).\n\nAll responses share the envelope `{ success, data?, message?, error?, errors? }`."
+    "description": "The AnonAge integration API. Create an age-verification session, receive a signed result, and report on your usage."
   },
   "servers": [
-    { "url": "https://api.anonage.io", "description": "Production (coming soon)" },
-    { "url": "https://dev1api.anonage.io", "description": "Development" }
+    {
+      "url": "https://api.anonage.io",
+      "description": "Production (coming soon)"
+    },
+    {
+      "url": "https://dev1api.anonage.io",
+      "description": "Development"
+    }
   ],
   "tags": [
-    { "name": "Health" },
-    { "name": "Auth", "description": "Register, sign in, email verification, password reset." },
-    { "name": "Users", "description": "Profile, password, email, account." },
-    { "name": "KYC", "description": "Identity verification via Sumsub." },
-    { "name": "Verification", "description": "Merchant age-verification sessions." },
-    { "name": "API keys", "description": "Business keys for the integration API." },
-    { "name": "Usage", "description": "Verification usage reporting." },
-    { "name": "Webhooks", "description": "Inbound provider webhooks." }
+    {
+      "name": "Health"
+    },
+    {
+      "name": "Auth",
+      "description": "Register, sign in, email verification, password reset."
+    },
+    {
+      "name": "Verification",
+      "description": "Merchant age-verification sessions."
+    },
+    {
+      "name": "Usage",
+      "description": "Verification usage reporting."
+    }
   ],
-  "security": [{ "BearerAuth": [] }],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
   "paths": {
     "/api/health": {
       "get": {
         "operationId": "health",
         "summary": "Health check",
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "security": [],
-        "responses": { "200": { "description": "Service status" } }
+        "responses": {
+          "200": {
+            "description": "Service status"
+          }
+        }
       }
     },
     "/api/auth/register": {
@@ -35,7 +58,9 @@
         "operationId": "register",
         "summary": "Register",
         "description": "Create a PERSONAL or BUSINESS account. `companyName` is required for BUSINESS.",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -43,14 +68,37 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password", "userType"],
+                "required": [
+                  "email",
+                  "password",
+                  "userType"
+                ],
                 "properties": {
-                  "email": { "type": "string", "format": "email" },
-                  "password": { "type": "string", "minLength": 8 },
-                  "firstName": { "type": "string" },
-                  "lastName": { "type": "string" },
-                  "userType": { "type": "string", "enum": ["PERSONAL", "BUSINESS"] },
-                  "companyName": { "type": "string", "description": "Required for BUSINESS accounts." }
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "userType": {
+                    "type": "string",
+                    "enum": [
+                      "PERSONAL",
+                      "BUSINESS"
+                    ]
+                  },
+                  "companyName": {
+                    "type": "string",
+                    "description": "Required for BUSINESS accounts."
+                  }
                 }
               }
             }
@@ -61,12 +109,18 @@
             "description": "Registered",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthResult" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResult"
+                }
               }
             }
           },
-          "409": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -74,7 +128,9 @@
       "post": {
         "operationId": "login",
         "summary": "Log in",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -82,10 +138,18 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password"],
+                "required": [
+                  "email",
+                  "password"
+                ],
                 "properties": {
-                  "email": { "type": "string", "format": "email" },
-                  "password": { "type": "string" }
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -96,11 +160,15 @@
             "description": "Signed in",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AuthResult" }
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResult"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -108,37 +176,66 @@
       "post": {
         "operationId": "verifyEmail",
         "summary": "Verify email",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/Token" },
-        "responses": { "200": { "description": "Verified" }, "400": { "$ref": "#/components/responses/Error" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Token"
+        },
+        "responses": {
+          "200": {
+            "description": "Verified"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
       }
     },
     "/api/auth/resend-verification": {
       "post": {
         "operationId": "resendVerification",
         "summary": "Resend verification email",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/Email" },
-        "responses": { "200": { "description": "Sent" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Email"
+        },
+        "responses": {
+          "200": {
+            "description": "Sent"
+          }
+        }
       }
     },
     "/api/auth/forgot-password": {
       "post": {
         "operationId": "forgotPassword",
         "summary": "Request password reset",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/Email" },
-        "responses": { "200": { "description": "Sent if the account exists" } }
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Email"
+        },
+        "responses": {
+          "200": {
+            "description": "Sent if the account exists"
+          }
+        }
       }
     },
     "/api/auth/reset-password": {
       "post": {
         "operationId": "resetPassword",
         "summary": "Reset password",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -146,16 +243,31 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["token", "password"],
+                "required": [
+                  "token",
+                  "password"
+                ],
                 "properties": {
-                  "token": { "type": "string" },
-                  "password": { "type": "string", "minLength": 8 }
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "200": { "description": "Reset" }, "400": { "$ref": "#/components/responses/Error" } }
+        "responses": {
+          "200": {
+            "description": "Reset"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
       }
     },
     "/api/auth/confirm-email-change": {
@@ -163,186 +275,67 @@
         "operationId": "confirmEmailChange",
         "summary": "Confirm email change",
         "description": "Completes a self-service email change started at `/api/users/change-email`.",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
-        "requestBody": { "$ref": "#/components/requestBodies/Token" },
-        "responses": { "200": { "description": "Email switched" }, "400": { "$ref": "#/components/responses/Error" } }
-      }
-    },
-    "/api/users/profile": {
-      "get": {
-        "operationId": "getProfile",
-        "summary": "Get profile",
-        "tags": ["Users"],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Token"
+        },
         "responses": {
           "200": {
-            "description": "Profile (includes KYC status + age claim)",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Envelope" } } }
+            "description": "Email switched"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
           }
         }
-      },
-      "put": {
-        "operationId": "updateProfile",
-        "summary": "Update profile",
-        "description": "Name changes are ignored once the account is KYC-approved (identity is locked).",
-        "tags": ["Users"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "firstName": { "type": "string" },
-                  "lastName": { "type": "string" },
-                  "companyName": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Updated" } }
-      }
-    },
-    "/api/users/change-password": {
-      "post": {
-        "operationId": "changePassword",
-        "summary": "Change password",
-        "tags": ["Users"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["currentPassword", "newPassword"],
-                "properties": {
-                  "currentPassword": { "type": "string" },
-                  "newPassword": { "type": "string", "minLength": 8 }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Changed" }, "401": { "$ref": "#/components/responses/Error" } }
-      }
-    },
-    "/api/users/change-email": {
-      "post": {
-        "operationId": "changeEmail",
-        "summary": "Change email",
-        "description": "Starts a verify-then-switch flow: a confirmation link is emailed to the new address; the change completes at `/api/auth/confirm-email-change`.",
-        "tags": ["Users"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["newEmail", "currentPassword"],
-                "properties": {
-                  "newEmail": { "type": "string", "format": "email" },
-                  "currentPassword": { "type": "string" }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Confirmation sent" } }
-      }
-    },
-    "/api/users/account": {
-      "delete": {
-        "operationId": "deleteAccount",
-        "summary": "Delete account",
-        "description": "Requires authentication and a verified email.",
-        "tags": ["Users"],
-        "responses": { "200": { "description": "Deleted" } }
-      }
-    },
-    "/api/kyc/create-applicant": {
-      "post": {
-        "operationId": "createApplicant",
-        "summary": "Create KYC applicant",
-        "tags": ["KYC"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "firstName": { "type": "string" },
-                  "lastName": { "type": "string" },
-                  "dob": { "type": "string", "format": "date", "description": "YYYY-MM-DD (optional)." },
-                  "address": {
-                    "type": "object",
-                    "properties": {
-                      "country": { "type": "string", "description": "Required if address is provided." },
-                      "street": { "type": "string" },
-                      "town": { "type": "string" },
-                      "postcode": { "type": "string" }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": { "200": { "description": "Applicant created" } }
-      }
-    },
-    "/api/kyc/create-check": {
-      "post": {
-        "operationId": "createCheck",
-        "summary": "Create KYC check",
-        "tags": ["KYC"],
-        "responses": { "200": { "description": "Check created" } }
-      }
-    },
-    "/api/kyc/status": {
-      "get": {
-        "operationId": "kycStatus",
-        "summary": "Get KYC status",
-        "tags": ["KYC"],
-        "responses": { "200": { "description": "Current status + verifications" } }
-      }
-    },
-    "/api/kyc/sdk-token": {
-      "get": {
-        "operationId": "kycSdkToken",
-        "summary": "Get Sumsub SDK token",
-        "tags": ["KYC"],
-        "responses": { "200": { "description": "SDK token + applicant id" } }
-      }
-    },
-    "/api/kyc/hosted-link": {
-      "get": {
-        "operationId": "kycHostedLink",
-        "summary": "Get hosted verification link",
-        "description": "Creates a minimal applicant (external user id only — no name/DOB) and returns a Sumsub hosted verification URL to open in a new tab.",
-        "tags": ["KYC"],
-        "responses": { "200": { "description": "Hosted link" } }
       }
     },
     "/api/age-verification/session": {
       "post": {
         "operationId": "createSession",
         "summary": "Open a verification session",
-        "description": "Call this from your **server** (never the browser) — your API key and callback URL stay server-side. Returns an opaque `session_id` + `nonce` you encode into the QR / tap-link.",
-        "security": [{ "ApiKeyAuth": [] }],
-        "tags": ["Verification"],
+        "description": "Call this from your **server** (never the browser) \u2014 your API key and callback URL stay server-side. Returns an opaque `session_id` + `nonce` you encode into the QR / tap-link.",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Verification"
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["callback_url"],
+                "required": [
+                  "callback_url"
+                ],
                 "properties": {
-                  "age_required": { "type": "integer", "enum": [13, 16, 18, 21], "default": 18 },
-                  "callback_url": { "type": "string", "format": "uri", "description": "Must be https in production." }
+                  "age_required": {
+                    "type": "integer",
+                    "enum": [
+                      13,
+                      16,
+                      18,
+                      21
+                    ],
+                    "default": 18
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Must be https in production."
+                  }
                 }
               },
-              "example": { "age_required": 18, "callback_url": "https://shop.example/anonage/callback" }
+              "example": {
+                "age_required": 18,
+                "callback_url": "https://shop.example/anonage/callback"
+              }
             }
           }
         },
@@ -353,13 +346,24 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Session" } }
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Session"
+                    }
+                  }
                 }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/Error" },
-          "401": { "$ref": "#/components/responses/Error" }
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -368,9 +372,24 @@
         "operationId": "getSession",
         "summary": "Poll a session",
         "description": "Fallback if the signed callback was missed. You may only read your own sessions.",
-        "security": [{ "ApiKeyAuth": [] }],
-        "tags": ["Verification"],
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Verification"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Session state",
@@ -378,68 +397,22 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/SessionResult" } }
-                }
-              }
-            }
-          },
-          "404": { "$ref": "#/components/responses/Error" }
-        }
-      }
-    },
-    "/api/keys": {
-      "post": {
-        "operationId": "createApiKey",
-        "summary": "Create an API key",
-        "description": "Mints a key for a verified BUSINESS account. The raw key and signing secret are returned **once**.",
-        "tags": ["API keys"],
-        "requestBody": {
-          "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" } } } } }
-        },
-        "responses": {
-          "201": {
-            "description": "Key created (secret shown once)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
                   "properties": {
-                    "success": { "type": "boolean" },
-                    "message": { "type": "string" },
-                    "data": { "$ref": "#/components/schemas/CreatedApiKey" }
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SessionResult"
+                    }
                   }
                 }
               }
             }
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
           }
         }
-      },
-      "get": {
-        "operationId": "listApiKeys",
-        "summary": "List API keys",
-        "tags": ["API keys"],
-        "responses": {
-          "200": {
-            "description": "Keys (prefixes only, no secrets)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/ApiKey" } } }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/keys/{id}": {
-      "delete": {
-        "operationId": "revokeApiKey",
-        "summary": "Revoke an API key",
-        "tags": ["API keys"],
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Revoked" }, "404": { "$ref": "#/components/responses/Error" } }
       }
     },
     "/api/usage/summary": {
@@ -447,20 +420,46 @@
         "operationId": "usageSummary",
         "summary": "Usage summary",
         "description": "Totals over an optional `from`/`to` range (default last 30 days), across the account's keys.",
-        "tags": ["Usage"],
-        "parameters": [
-          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date" } },
-          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date" } }
+        "tags": [
+          "Usage"
         ],
-        "responses": { "200": { "description": "Summary" } }
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summary"
+          }
+        }
       }
     },
     "/api/usage/by-key": {
       "get": {
         "operationId": "usageByKey",
         "summary": "Usage by key",
-        "tags": ["Usage"],
-        "responses": { "200": { "description": "Per-key breakdown" } }
+        "tags": [
+          "Usage"
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-key breakdown"
+          }
+        }
       }
     },
     "/api/usage/sessions": {
@@ -468,33 +467,78 @@
         "operationId": "usageSessions",
         "summary": "Session log",
         "description": "Paginated log of sessions (cursor via `next_cursor`). Contains no end-user identity.",
-        "tags": ["Usage"],
-        "parameters": [
-          { "name": "from", "in": "query", "schema": { "type": "string", "format": "date" } },
-          { "name": "to", "in": "query", "schema": { "type": "string", "format": "date" } },
-          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["PENDING", "APPROVED", "DENIED", "EXPIRED"] } },
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50, "maximum": 200 } },
-          { "name": "cursor", "in": "query", "schema": { "type": "string" } }
+        "tags": [
+          "Usage"
         ],
-        "responses": { "200": { "description": "Sessions page" } }
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "DENIED",
+                "EXPIRED"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions page"
+          }
+        }
       }
     },
     "/api/usage/export.csv": {
       "get": {
         "operationId": "usageExportCsv",
         "summary": "Export usage as CSV",
-        "tags": ["Usage"],
-        "responses": { "200": { "description": "CSV", "content": { "text/csv": {} } } }
-      }
-    },
-    "/api/webhooks/sumsub": {
-      "post": {
-        "operationId": "sumsubWebhook",
-        "summary": "Sumsub webhook (inbound)",
-        "description": "Called by Sumsub when verification events occur. No bearer auth — authenticated by the `x-payload-digest` HMAC signature over the raw body.",
-        "tags": ["Webhooks"],
-        "security": [],
-        "responses": { "200": { "description": "Acknowledged" } }
+        "tags": [
+          "Usage"
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV",
+            "content": {
+              "text/csv": {}
+            }
+          }
+        }
       }
     }
   },
@@ -504,10 +548,30 @@
         "summary": "Verification result callback (outbound)",
         "description": "When the user approves in their wallet, AnonAge POSTs your `callback_url`. **Verify the signature** before trusting the body: recompute `HMAC_SHA256(signing_secret, \"{t}.{rawBody}\")` and compare against `v1` in the `X-AnonAge-Signature` header; reject if `t` is older than a few minutes.",
         "parameters": [
-          { "name": "X-AnonAge-Signature", "in": "header", "required": true, "schema": { "type": "string" }, "example": "t=1784265683,v1=3f5a…" }
+          {
+            "name": "X-AnonAge-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "t=1784265683,v1=3f5a\u2026"
+          }
         ],
-        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CallbackPayload" } } } },
-        "responses": { "200": { "description": "Acknowledge with any 2xx." } }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallbackPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Acknowledge with any 2xx."
+          }
+        }
       }
     }
   },
@@ -517,52 +581,86 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-API-Key",
-        "description": "Your merchant secret key, e.g. `anonage_sk_…`. Server-side only."
+        "description": "Your merchant secret key, e.g. `anonage_sk_\u2026`. Server-side only."
       },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "Account JWT from `/api/auth/login` — used for Users, KYC, key management and usage."
+        "description": "Account JWT from `/api/auth/login` \u2014 used for the usage and reporting endpoints in your AnonAge dashboard."
       }
     },
     "requestBodies": {
       "Token": {
         "required": true,
-        "content": { "application/json": { "schema": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string" } } } } }
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "token"
+              ],
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       },
       "Email": {
         "required": true,
-        "content": { "application/json": { "schema": { "type": "object", "required": ["email"], "properties": { "email": { "type": "string", "format": "email" } } } } }
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "responses": {
       "Error": {
         "description": "Error",
-        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
       }
     },
     "schemas": {
-      "Envelope": {
-        "type": "object",
-        "properties": {
-          "success": { "type": "boolean" },
-          "data": {},
-          "message": { "type": "string" },
-          "error": { "type": "string" },
-          "errors": { "type": "array", "items": {} }
-        }
-      },
       "AuthResult": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean" },
-          "message": { "type": "string" },
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
           "data": {
             "type": "object",
             "properties": {
-              "user": { "$ref": "#/components/schemas/User" },
-              "token": { "type": "string", "description": "JWT — send as `Authorization: Bearer`." }
+              "user": {
+                "$ref": "#/components/schemas/User"
+              },
+              "token": {
+                "type": "string",
+                "description": "JWT \u2014 send as `Authorization: Bearer`."
+              }
             }
           }
         }
@@ -570,78 +668,134 @@
       "User": {
         "type": "object",
         "properties": {
-          "id": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "firstName": { "type": ["string", "null"] },
-          "lastName": { "type": ["string", "null"] },
-          "companyName": { "type": ["string", "null"] },
-          "userType": { "type": "string", "enum": ["PERSONAL", "BUSINESS"] },
-          "emailVerified": { "type": "boolean" },
-          "createdAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "companyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "userType": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          },
+          "emailVerified": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "Session": {
         "type": "object",
         "properties": {
-          "session_id": { "type": "string" },
-          "nonce": { "type": "string", "description": "One-time value; encode with session_id into the QR." },
-          "age_required": { "type": "integer" },
-          "expires_at": { "type": "string", "format": "date-time" }
+          "session_id": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "One-time value; encode with session_id into the QR."
+          },
+          "age_required": {
+            "type": "integer"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "SessionResult": {
         "type": "object",
         "properties": {
-          "session_id": { "type": "string" },
-          "status": { "type": "string", "enum": ["PENDING", "APPROVED", "DENIED", "EXPIRED"] },
-          "above_age_required": { "type": ["boolean", "null"] },
-          "assurance": { "type": ["string", "null"], "enum": ["KYC_VERIFIED", "FAMILY_ASSERTED", null] },
-          "receipt_id": { "type": ["string", "null"] },
-          "age_required": { "type": "integer" },
-          "expires_at": { "type": "string", "format": "date-time" },
-          "resolved_at": { "type": ["string", "null"], "format": "date-time" }
-        }
-      },
-      "CallbackPayload": {
-        "type": "object",
-        "properties": {
-          "session_id": { "type": "string" },
-          "above_age_required": { "type": "boolean" },
-          "age_required": { "type": "integer" },
-          "assurance": { "type": "string", "enum": ["KYC_VERIFIED", "FAMILY_ASSERTED"] },
-          "receipt_id": { "type": "string" },
-          "verified_at": { "type": "integer", "description": "Unix seconds." }
-        }
-      },
-      "ApiKey": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "keyPrefix": { "type": "string" },
-          "isActive": { "type": "boolean" },
-          "lastUsedAt": { "type": ["string", "null"], "format": "date-time" },
-          "createdAt": { "type": "string", "format": "date-time" }
-        }
-      },
-      "CreatedApiKey": {
-        "allOf": [
-          { "$ref": "#/components/schemas/ApiKey" },
-          {
-            "type": "object",
-            "properties": {
-              "key": { "type": "string", "description": "Raw secret key — shown once." },
-              "signingSecret": { "type": "string", "description": "Callback HMAC secret — shown once." }
-            }
+          "session_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "DENIED",
+              "EXPIRED"
+            ]
+          },
+          "above_age_required": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "assurance": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "KYC_VERIFIED",
+              "FAMILY_ASSERTED",
+              null
+            ]
+          },
+          "receipt_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "age_required": {
+            "type": "integer"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resolved_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
           }
-        ]
+        }
       },
       "Error": {
         "type": "object",
         "properties": {
-          "success": { "type": "boolean", "example": false },
-          "error": { "type": "string" },
-          "errors": { "type": "array", "items": {} }
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {}
+          }
         }
       }
     }

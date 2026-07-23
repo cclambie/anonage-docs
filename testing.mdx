@@ -35,12 +35,14 @@ real KYC.
 </Steps>
 
 <Note>
-**Roadmap:** dedicated **test** and **live** API keys. A test key will run against sandbox and never
-bill, so you can keep an integration test suite running against your live account safely.
+Use a **test key** (`anonage_sk_test_…`) for this. Test keys are never billed and never count
+against your usage limit, so you can keep an integration suite running indefinitely. See
+[Authentication](/authentication#test-and-live-keys).
 </Note>
 
 ## Going live
 
 1. Point your base URL at `https://api.anonage.io`.
-2. Swap your development key for a production key from the [Console](https://anonage.io/console).
+2. Swap your test key for a **live key** (`anonage_sk_live_…`) from your
+   [Dashboard](https://anonage.io/console). Live keys require a verified identity on the account.
 3. Make sure your `callback_url` is publicly reachable over **https** and verifies signatures.

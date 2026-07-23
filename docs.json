@@ -20,6 +20,10 @@
           {
             "group": "Integrate",
             "pages": ["webhooks", "testing"]
+          },
+          {
+            "group": "Plugins",
+            "pages": ["plugins/shopify", "plugins/wordpress"]
           }
         ]
       },
@@ -45,7 +49,7 @@
   "navbar": {
     "primary": {
       "type": "button",
-      "label": "Console",
+      "label": "Dashboard",
       "href": "https://anonage.io/console"
     }
   },

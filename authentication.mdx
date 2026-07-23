@@ -5,7 +5,7 @@ description: "API keys, the two secrets, and how to keep them safe."
 
 ## API keys
 
-Create keys in the [Console](https://anonage.io/console) → **API Keys** (verified business
+Create keys in the [Dashboard](https://anonage.io/console) → **API Keys** (verified business
 accounts only). Each key gives you two secrets, shown **once** at creation:
 
 <CardGroup cols={2}>
@@ -40,15 +40,26 @@ put it in a QR code — open sessions from your backend and hand the browser onl
 
 | Header | Used for | Auth |
 | --- | --- | --- |
-| `X-API-Key: anonage_sk_…` | Verification endpoints (`/api/age-verification/*`) | Your merchant key |
-| `Authorization: Bearer <jwt>` | Key management & usage (`/api/keys`, `/api/usage/*`) | Your dashboard session |
+| `X-API-Key: anonage_sk_…` | Verification endpoints (`/api/age-verification/*`) | Your API key |
+| `Authorization: Bearer <jwt>` | Usage & reporting (`/api/usage/*`) | Your dashboard session |
+
+## Test and live keys
+
+Every key belongs to one environment, and says so in its own prefix:
+
+| Prefix | Environment | Behaviour |
+| --- | --- | --- |
+| `anonage_sk_test_…` | Test | Free. Never billed, never counted against your usage limit. |
+| `anonage_sk_live_…` | Live | Real verifications. Metered and billed. |
+
+Test keys need a verified email address. Live keys additionally require a verified identity on the
+account — your Dashboard walks you through both.
 
 ## Rotating & revoking
 
-Revoke a key in the Console at any time — sites using it stop verifying immediately. To rotate
+Revoke a key in your Dashboard at any time — sites using it stop verifying immediately. To rotate
 with zero downtime, create the new key, deploy it, then revoke the old one.
 
 <Note>
-**Roadmap:** separate **test** and **live** keys (test keys run against sandbox and don't bill),
-per-key allowed origins, and signing-secret rotation with a grace window.
+**Roadmap:** per-key allowed origins, and signing-secret rotation with a grace window.
 </Note>

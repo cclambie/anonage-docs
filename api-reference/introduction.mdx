@@ -3,9 +3,8 @@ title: "API Reference"
 description: "Base URLs, response format, authentication, and conventions."
 ---
 
-The AnonAge API is a small REST API over JSON. It covers both the **integration** endpoints
-(open verification sessions, manage keys, read usage) and the **platform** endpoints the AnonAge
-apps use (auth, users, KYC).
+The AnonAge API is a small REST API over JSON. It covers everything you need to put an age gate on
+your site: open a verification session, receive the signed result, and report on your usage.
 
 ## Base URLs
 
@@ -32,21 +31,25 @@ Every response uses the same envelope:
 
 | Header | Used for | Auth |
 | --- | --- | --- |
-| `X-API-Key: anonage_sk_…` | Verification endpoints (`/api/age-verification/*`) | Merchant key (server-side only) |
-| `Authorization: Bearer <jwt>` | Auth-protected: Users, KYC, API keys, Usage | Account JWT from `/api/auth/login` |
+| `X-API-Key: anonage_sk_…` | Verification endpoints (`/api/age-verification/*`) | Your API key (server-side only) |
+| `Authorization: Bearer <jwt>` | Usage and reporting endpoints | Account JWT from `/api/auth/login` |
 
-See [Authentication](/authentication) for merchant keys.
+See [Authentication](/authentication) for API keys.
 
 ## Endpoint groups
 
+- **Health** — service status.
 - **Auth** — register, login, email verification, password reset.
-- **Users** — profile, password, email, account.
-- **KYC** — Sumsub applicant, check, status, hosted link.
-- **Verification** — open a session, poll a session *(merchant key)*.
-- **API keys** — create, list, revoke *(business account)*.
+- **Verification** — open a session, poll a session *(API key)*.
 - **Usage** — summary, by-key, session log, CSV export *(business account)*.
-- **Webhooks** — the inbound Sumsub webhook, and the outbound
-  [result callback](/webhooks) AnonAge sends you.
+
+AnonAge also sends you an outbound [result callback](/webhooks) when a verification completes —
+that is the signal your site should act on, rather than polling.
+
+<Note>
+  API keys are created and revoked in your [Dashboard](https://anonage.io/console) rather than
+  through the API.
+</Note>
 
 ## Error codes
 

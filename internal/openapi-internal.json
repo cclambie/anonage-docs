@@ -1,0 +1,567 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AnonAge Internal API",
+    "version": "1.0.0",
+    "description": "INTERNAL \u2014 endpoints used by the AnonAge web app, mobile wallet and identity provider. Not part of the public merchant integration surface and not published to docs.anonage.io."
+  },
+  "servers": [
+    {
+      "url": "https://api.anonage.io",
+      "description": "Production (coming soon)"
+    },
+    {
+      "url": "https://dev1api.anonage.io",
+      "description": "Development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "Profile, password, email, account."
+    },
+    {
+      "name": "KYC",
+      "description": "Identity verification via Sumsub."
+    },
+    {
+      "name": "API keys",
+      "description": "Business keys for the integration API."
+    },
+    {
+      "name": "Webhooks",
+      "description": "Inbound provider webhooks."
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/users/profile": {
+      "get": {
+        "operationId": "getProfile",
+        "summary": "Get profile",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile (includes KYC status + age claim)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateProfile",
+        "summary": "Update profile",
+        "description": "Name changes are ignored once the account is KYC-approved (identity is locked).",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "companyName": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/api/users/change-password": {
+      "post": {
+        "operationId": "changePassword",
+        "summary": "Change password",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ],
+                "properties": {
+                  "currentPassword": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Changed"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/users/change-email": {
+      "post": {
+        "operationId": "changeEmail",
+        "summary": "Change email",
+        "description": "Starts a verify-then-switch flow: a confirmation link is emailed to the new address; the change completes at `/api/auth/confirm-email-change`.",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "newEmail",
+                  "currentPassword"
+                ],
+                "properties": {
+                  "newEmail": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "currentPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Confirmation sent"
+          }
+        }
+      }
+    },
+    "/api/users/account": {
+      "delete": {
+        "operationId": "deleteAccount",
+        "summary": "Delete account",
+        "description": "Requires authentication and a verified email.",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          }
+        }
+      }
+    },
+    "/api/kyc/create-applicant": {
+      "post": {
+        "operationId": "createApplicant",
+        "summary": "Create KYC applicant",
+        "tags": [
+          "KYC"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "dob": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "YYYY-MM-DD (optional)."
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "country": {
+                        "type": "string",
+                        "description": "Required if address is provided."
+                      },
+                      "street": {
+                        "type": "string"
+                      },
+                      "town": {
+                        "type": "string"
+                      },
+                      "postcode": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applicant created"
+          }
+        }
+      }
+    },
+    "/api/kyc/create-check": {
+      "post": {
+        "operationId": "createCheck",
+        "summary": "Create KYC check",
+        "tags": [
+          "KYC"
+        ],
+        "responses": {
+          "200": {
+            "description": "Check created"
+          }
+        }
+      }
+    },
+    "/api/kyc/status": {
+      "get": {
+        "operationId": "kycStatus",
+        "summary": "Get KYC status",
+        "tags": [
+          "KYC"
+        ],
+        "responses": {
+          "200": {
+            "description": "Current status + verifications"
+          }
+        }
+      }
+    },
+    "/api/kyc/sdk-token": {
+      "get": {
+        "operationId": "kycSdkToken",
+        "summary": "Get Sumsub SDK token",
+        "tags": [
+          "KYC"
+        ],
+        "responses": {
+          "200": {
+            "description": "SDK token + applicant id"
+          }
+        }
+      }
+    },
+    "/api/kyc/hosted-link": {
+      "get": {
+        "operationId": "kycHostedLink",
+        "summary": "Get hosted verification link",
+        "description": "Creates a minimal applicant (external user id only \u2014 no name/DOB) and returns a Sumsub hosted verification URL to open in a new tab.",
+        "tags": [
+          "KYC"
+        ],
+        "responses": {
+          "200": {
+            "description": "Hosted link"
+          }
+        }
+      }
+    },
+    "/api/keys": {
+      "post": {
+        "operationId": "createApiKey",
+        "summary": "Create an API key",
+        "description": "Mints a key for a verified BUSINESS account. The raw key and signing secret are returned **once**.",
+        "tags": [
+          "API keys"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Key created (secret shown once)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreatedApiKey"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listApiKeys",
+        "summary": "List API keys",
+        "tags": [
+          "API keys"
+        ],
+        "responses": {
+          "200": {
+            "description": "Keys (prefixes only, no secrets)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ApiKey"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/keys/{id}": {
+      "delete": {
+        "operationId": "revokeApiKey",
+        "summary": "Revoke an API key",
+        "tags": [
+          "API keys"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoked"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/webhooks/sumsub": {
+      "post": {
+        "operationId": "sumsubWebhook",
+        "summary": "Sumsub webhook (inbound)",
+        "description": "Called by Sumsub when verification events occur. No bearer auth \u2014 authenticated by the `x-payload-digest` HMAC signature over the raw body.",
+        "tags": [
+          "Webhooks"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Acknowledged"
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "verificationResult": {
+      "post": {
+        "summary": "Verification result callback (outbound)",
+        "description": "When the user approves in their wallet, AnonAge POSTs your `callback_url`. **Verify the signature** before trusting the body: recompute `HMAC_SHA256(signing_secret, \"{t}.{rawBody}\")` and compare against `v1` in the `X-AnonAge-Signature` header; reject if `t` is older than a few minutes.",
+        "parameters": [
+          {
+            "name": "X-AnonAge-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "t=1784265683,v1=3f5a\u2026"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallbackPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Acknowledge with any 2xx."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Your merchant secret key, e.g. `anonage_sk_\u2026`. Server-side only."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Account JWT from `/api/auth/login` \u2014 used for Users, KYC, key management and usage."
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {},
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "keyPrefix": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "lastUsedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatedApiKey": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiKey"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "description": "Raw secret key \u2014 shown once."
+              },
+              "signingSecret": {
+                "type": "string",
+                "description": "Callback HMAC secret \u2014 shown once."
+              }
+            }
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {}
+          }
+        }
+      }
+    }
+  }
+}
