@@ -15,15 +15,31 @@
         "groups": [
           {
             "group": "Get started",
-            "pages": ["introduction", "quickstart", "authentication"]
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Transparency",
+            "pages": [
+              "transparency"
+            ]
           },
           {
             "group": "Integrate",
-            "pages": ["webhooks", "testing"]
+            "pages": [
+              "webhooks",
+              "testing"
+            ]
           },
           {
             "group": "Plugins",
-            "pages": ["plugins/shopify", "plugins/wordpress"]
+            "pages": [
+              "plugins/shopify",
+              "plugins/wordpress"
+            ]
           }
         ]
       },
@@ -32,7 +48,9 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["api-reference/introduction"]
+            "pages": [
+              "api-reference/introduction"
+            ]
           },
           {
             "group": "Endpoints",
@@ -49,9 +67,18 @@
   },
   "navbar": {
     "links": [
-      { "label": "Main site", "href": "https://anonage.io" },
-      { "label": "Pricing", "href": "https://anonage.io/pricing" },
-      { "label": "Support", "href": "https://anonage.io/support" }
+      {
+        "label": "Main site",
+        "href": "https://anonage.io"
+      },
+      {
+        "label": "Pricing",
+        "href": "https://anonage.io/pricing"
+      },
+      {
+        "label": "Support",
+        "href": "https://anonage.io/support"
+      }
     ],
     "primary": {
       "type": "button",
@@ -70,27 +97,60 @@
       {
         "header": "Product",
         "items": [
-          { "label": "AnonAge home", "href": "https://anonage.io" },
-          { "label": "For business", "href": "https://anonage.io/business" },
-          { "label": "For individuals", "href": "https://anonage.io/personal" },
-          { "label": "Pricing", "href": "https://anonage.io/pricing" }
+          {
+            "label": "AnonAge home",
+            "href": "https://anonage.io"
+          },
+          {
+            "label": "For business",
+            "href": "https://anonage.io/business"
+          },
+          {
+            "label": "For individuals",
+            "href": "https://anonage.io/personal"
+          },
+          {
+            "label": "Pricing",
+            "href": "https://anonage.io/pricing"
+          }
         ]
       },
       {
         "header": "Support",
         "items": [
-          { "label": "Support", "href": "https://anonage.io/support" },
-          { "label": "Contact", "href": "https://anonage.io/contact" },
-          { "label": "Dashboard", "href": "https://anonage.io/console" }
+          {
+            "label": "Support",
+            "href": "https://anonage.io/support"
+          },
+          {
+            "label": "Contact",
+            "href": "https://anonage.io/contact"
+          },
+          {
+            "label": "Dashboard",
+            "href": "https://anonage.io/console"
+          }
         ]
       },
       {
         "header": "Legal",
         "items": [
-          { "label": "Privacy Policy", "href": "https://anonage.io/privacy" },
-          { "label": "Terms of Service", "href": "https://anonage.io/terms" },
-          { "label": "Compliance", "href": "https://anonage.io/compliance" },
-          { "label": "Jurisdictions", "href": "https://anonage.io/compliance/jurisdictions" }
+          {
+            "label": "Privacy Policy",
+            "href": "https://anonage.io/privacy"
+          },
+          {
+            "label": "Terms of Service",
+            "href": "https://anonage.io/terms"
+          },
+          {
+            "label": "Compliance",
+            "href": "https://anonage.io/compliance"
+          },
+          {
+            "label": "Jurisdictions",
+            "href": "https://anonage.io/compliance/jurisdictions"
+          }
         ]
       }
     ]

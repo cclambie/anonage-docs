@@ -1,0 +1,90 @@
+---
+title: "Data handling and transparency"
+description: "What AnonAge sends to its identity provider, what it keeps, when documents are destroyed, and where to read the code that does it."
+---
+
+Age verification usually works by making people hand identity documents to whoever runs the site.
+AnonAge is built so that neither the site nor AnonAge ever holds them. This page states exactly
+what happens to a user's data, so you can check the claim rather than trust it.
+
+## What your site receives
+
+A single boolean. `true` or `false` against the age threshold you asked for.
+
+Your servers never receive a name, a date of birth, a document image, or a face. There is nothing
+for you to store, encrypt, retain or delete, and nothing that can be taken from you in a breach.
+
+<Note>
+  This is the part that reduces your liability: you cannot expose data you never held.
+</Note>
+
+## What AnonAge sends to Sumsub
+
+Identity verification is performed by [Sumsub](https://sumsub.com). The user goes to Sumsub's own
+hosted page, so their documents travel from the user to Sumsub directly — not through us.
+
+What we send when starting a verification:
+
+| Field | Value |
+| --- | --- |
+| `externalUserId` | An internal reference, e.g. `user_<id>`. Meaningless outside our system. |
+| `email` | The account email address, so Sumsub can contact the user about their check. |
+
+That is the entire payload. No name, no date of birth, no address, no country.
+
+## What AnonAge keeps
+
+| We keep | We do not keep |
+| --- | --- |
+| Age bands (`over18`, `over21`, …) | Identity documents |
+| Date of birth, **only** while the user is under 21 | Selfies or biometric data |
+| Assurance level and verification timestamp | Document numbers |
+| A verification reference | Which sites a user verified on |
+
+The date of birth is retained for under-21s only because an exact age matters near a threshold. It
+is collapsed to age bands automatically on their 21st birthday.
+
+## When documents are destroyed
+
+**By default, immediately.** As soon as a verification returns a result — approved or rejected —
+AnonAge calls Sumsub's reset endpoint, which destroys the documents and biometrics held for that
+person. This is not a nightly job or a scheduled sweep; it happens on the webhook that delivers
+the result.
+
+After the reset, the only thing connecting AnonAge to Sumsub for that user is the applicant
+reference. There is nothing behind it.
+
+Two details worth stating plainly:
+
+- **A 28-day retention policy is configured at Sumsub as a backstop.** It catches anything a
+  reset does not clear, and anything belonging to a verification that was started but never
+  finished. Deletion is the primary mechanism; retention is the safety net, not the plan.
+- **Rejected verifications are reset too.** Someone who failed a check has even less reason to
+  have their passport sitting with a third party.
+
+### The user can opt out
+
+Before a user is sent to Sumsub, they are shown this choice, ticked by default:
+
+> **Delete my Sumsub records** — By default we ask Sumsub to destroy your documents as soon as we
+> receive the result, leaving only a verification reference. Untick this only if you want your
+> record kept at Sumsub for other reasons.
+
+If they untick it, their documents remain at Sumsub, we record that they chose this and when, and
+the choice is shown back to them on their account page. Documents persist at a third party only
+because the person asked for that — and we can evidence that they asked.
+
+## Read the code
+
+The Sumsub integration is published as open source. It is deliberately small — a few hundred lines
+— so that someone technical can read all of it in one sitting:
+
+- **`sumsubClient.ts`** — the only code that talks to Sumsub. Every request we send and every
+  field we read back is in this one file, including the reset call described above.
+- **`ageVerification.ts`** — the logic around the result, with no network calls: how a verified
+  date of birth becomes a minimal age claim, and how inbound webhooks are authenticated.
+
+The **mobile app** is published too. It is worth knowing what is *not* in it: the app never
+decides an age and never holds one. When a user scans a merchant's QR code, the app sends only a
+session id and a nonce; the answer is computed server-side from the claim AnonAge itself verified.
+A client that decided its own answer could be lied to. This one cannot be.
