@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "AnonAge",
   "colors": {
-    "primary": "#4f46e5",
-    "light": "#818cf8",
-    "dark": "#4338ca"
+    "primary": "#0B3D91",
+    "light": "#20D9FF",
+    "dark": "#07162E"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -44,9 +44,15 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "dark": "/logo/dark.svg",
+    "href": "https://anonage.io"
   },
   "navbar": {
+    "links": [
+      { "label": "Main site", "href": "https://anonage.io" },
+      { "label": "Pricing", "href": "https://anonage.io/pricing" },
+      { "label": "Support", "href": "https://anonage.io/support" }
+    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
@@ -55,7 +61,38 @@
   },
   "footer": {
     "socials": {
-      "website": "https://anonage.io"
-    }
+      "website": "https://anonage.io",
+      "mastodon": "https://mastodon.social/@anonage",
+      "linkedin": "https://www.linkedin.com/company/anonage-anonymous-age-verification/",
+      "facebook": "https://www.facebook.com/profile.php?id=61592255774661"
+    },
+    "links": [
+      {
+        "header": "Product",
+        "items": [
+          { "label": "AnonAge home", "href": "https://anonage.io" },
+          { "label": "For business", "href": "https://anonage.io/business" },
+          { "label": "For individuals", "href": "https://anonage.io/personal" },
+          { "label": "Pricing", "href": "https://anonage.io/pricing" }
+        ]
+      },
+      {
+        "header": "Support",
+        "items": [
+          { "label": "Support", "href": "https://anonage.io/support" },
+          { "label": "Contact", "href": "https://anonage.io/contact" },
+          { "label": "Dashboard", "href": "https://anonage.io/console" }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          { "label": "Privacy Policy", "href": "https://anonage.io/privacy" },
+          { "label": "Terms of Service", "href": "https://anonage.io/terms" },
+          { "label": "Compliance", "href": "https://anonage.io/compliance" },
+          { "label": "Jurisdictions", "href": "https://anonage.io/compliance/jurisdictions" }
+        ]
+      }
+    ]
   }
 }
