@@ -54,13 +54,14 @@ the result.
 After the reset, the only thing connecting AnonAge to Sumsub for that user is the applicant
 reference. There is nothing behind it.
 
-Two details worth stating plainly:
+**Rejected verifications are reset too.** Someone who failed a check has even less reason to have
+their passport sitting with a third party.
 
-- **A 28-day retention policy is configured at Sumsub as a backstop.** It catches anything a
-  reset does not clear, and anything belonging to a verification that was started but never
-  finished. Deletion is the primary mechanism; retention is the safety net, not the plan.
-- **Rejected verifications are reset too.** Someone who failed a check has even less reason to
-  have their passport sitting with a third party.
+<Note>
+  Deletion is triggered by us on the result, not by waiting for a retention period to expire. Under
+  Sumsub's terms the retention period for a client's data is defined by the client contractually
+  rather than by a dashboard toggle, so we do not rely on one: the reset call is the mechanism.
+</Note>
 
 ### The user can opt out
 
