@@ -37,8 +37,8 @@
           {
             "group": "Plugins",
             "pages": [
-              "plugins/shopify",
-              "plugins/wordpress"
+              "plugins/wordpress",
+              "plugins/shopify"
             ]
           }
         ]

@@ -1,35 +1,448 @@
 ---
 title: "WordPress"
-description: "Add an AnonAge age gate to any WordPress or WooCommerce site."
+description: "Put an age gate on any WordPress site — free self-declaration out of the box, or a real identity-backed check."
 ---
 
-<Note>
-**Coming soon.** The WordPress plugin is in development. In the meantime you can integrate directly
-with the [API](/quickstart) from a theme or a small custom plugin.
-</Note>
-
-## What it will do
-
-Install the plugin, paste in an API key, and choose what to gate — the whole site, specific pages
-and posts, or individual WooCommerce products. The plugin handles opening the session, rendering
-the gate, and verifying the callback signature for you.
+The AnonAge plugin puts an age gate in front of your WordPress content. It works immediately with
+no account, no API key and no cost, and upgrades to a real identity-backed check when you need one.
 
 <CardGroup cols={2}>
-  <Card title="Gate anything" icon="file-lines">
-    Whole site, selected pages/posts, a category, or WooCommerce products.
+  <Card title="Free to start" icon="gift">
+    Both self-declaration modes work with no AnonAge account at all.
   </Card>
-  <Card title="Set the age" icon="calendar">
-    Choose the minimum age per rule — 16, 18, 21, or a custom value.
+  <Card title="Cache-safe" icon="bolt">
+    Nothing to configure in WP Rocket, LiteSpeed, W3TC or Cloudflare.
   </Card>
-  <Card title="Shortcode & block" icon="code">
-    Drop a gate anywhere with a shortcode or a Gutenberg block.
+  <Card title="Keeps you findable" icon="magnifying-glass">
+    Gate the restricted part of a page and leave the rest indexable.
   </Card>
-  <Card title="Signature handled" icon="shield-check">
-    Callback verification is built in, so no signing code of your own.
+  <Card title="No third parties" icon="shield">
+    No tracking, and the QR code is generated on your own server.
   </Card>
 </CardGroup>
 
-## Want early access?
+## Install
 
-Email [support@anonage.io](mailto:support@anonage.io) and we will let you know when the plugin
-enters beta.
+<Steps>
+  <Step title="Add the plugin">
+    Upload it to `/wp-content/plugins/`, or install it from the Plugins screen, then activate it.
+    Requires WordPress 6.0 and PHP 7.4 or newer.
+  </Step>
+  <Step title="Open the settings">
+    A new **AnonAge** item appears in the admin menu.
+  </Step>
+  <Step title="Choose a mode and an age">
+    Pick how visitors prove their age, set the minimum age, and save. That is enough for a working
+    gate.
+  </Step>
+</Steps>
+
+## The two decisions that matter
+
+Everything else is detail. These two settings are independent, and **getting one right and not the
+other achieves nothing**.
+
+<Tabs>
+  <Tab title="How the age is checked">
+    | Mode | What the visitor does | API key | Cost |
+    |---|---|---|---|
+    | **Self-declaration — confirm** | Clicks "I am over 18" | No | Free |
+    | **Self-declaration — year of birth** | Types their year of birth; only asked the month, and then the day, if the year alone does not settle it | No | Free |
+    | **Verified** | Scans a QR code with the AnonAge app, or taps through on a phone | Yes | Per verification |
+
+    Self-declaration is a statement by the visitor, not a check. It is what most sites run and it
+    is a reasonable default, but it is not "highly effective age assurance" under the UK Online
+    Safety Act or its equivalents. Verified mode is.
+  </Tab>
+
+  <Tab title="How strongly it is enforced">
+    | Level | What leaves your server | Indexable | Cache setup |
+    |---|---|---|---|
+    | **Cover the page** | Everything | Yes | None |
+    | **Hide the restricted part** (recommended) | The public part only | Yes, above the marker | None |
+    | **Withhold the whole page** | Nothing but the gate | No | CDN rule only |
+
+    **Cover** draws the gate over the content in the browser. The content was still delivered, so
+    it can be recovered with developer tools — or by turning JavaScript off, which stops the
+    overlay existing at all. It is a courtesy notice, not a lock, and the plugin says so.
+
+    **Hide the restricted part** is the recommended setting and what the rest of this page assumes.
+  </Tab>
+</Tabs>
+
+<Warning>
+Choosing **Verified** with **Cover the page** means paying for a real identity check and then
+protecting the content with an overlay a visitor removes in one click. The plugin warns you when
+you save that combination. It is allowed — some sites want the check without hard gating — but it
+does not enforce anything.
+</Warning>
+
+## Settings
+
+<Frame caption="The Gate tab: mode, minimum age, what it applies to, enforcement level, and how long a visitor stays through.">
+  <img src="/images/wordpress/settings-gate.png" alt="The AnonAge Gate settings tab in WordPress" />
+</Frame>
+
+### Choosing what to gate
+
+<AccordionGroup>
+  <Accordion title="The whole site" icon="globe">
+    Every page. Simple, and the right answer for a site that is entirely age-restricted — but in
+    "Withhold the whole page" mode it also means search engines see nothing but the gate on every
+    URL.
+  </Accordion>
+
+  <Accordion title="Selected pages and posts" icon="list-check">
+    Tick the pages to gate. The picker shows your page hierarchy, and **ticking a parent covers all
+    of its children** — child pages are marked "gated via parent" so you can see what is covered
+    without having to work it out. Add posts or other post types by ID.
+
+    Inheritance follows the page hierarchy rather than the URL, so it still works on sites whose
+    permalinks are not hierarchical.
+  </Accordion>
+
+  <Accordion title="Anything under a URL path" icon="folder-tree">
+    One path per line. A path ending in a slash covers everything beneath it, so `/gated/` gates
+    that page and every child page under it. `*` works as a wildcard.
+
+    ```
+    /gated/
+    /shop/spirits/
+    /reviews/*-18-*
+    ```
+
+    Everything you do not list stays open and indexable.
+  </Accordion>
+</AccordionGroup>
+
+### Minimum age
+
+Only **13, 16, 18 and 21** are offered. These are the thresholds the AnonAge API supports, and
+keeping self-declaration on the same list means switching to verified mode later never quietly
+changes the age you enforce.
+
+### How long a visitor stays through
+
+Session-only, 1 hour, 24 hours (default), 7 days or 30 days.
+
+<Note>
+Do not set this meanly. In verified mode every re-check spends one of the **visitor's own** monthly
+verifications, so a 30-minute window would exhaust an entry-tier account in a day. Anything longer
+than 24 hours is flagged in the settings, because some jurisdictions expect a check per session.
+</Note>
+
+### Appearance and content
+
+<Frame caption="Backdrop colour, opacity and blur; panel, border and button colours; logo; and a full-screen background image.">
+  <img src="/images/wordpress/settings-appearance.png" alt="The AnonAge Appearance settings tab" />
+</Frame>
+
+<Frame caption="Every string the gate shows. Leave a field blank and the grey placeholder is used, which adapts to the minimum age you chose.">
+  <img src="/images/wordpress/settings-content.png" alt="The AnonAge Content settings tab" />
+</Frame>
+
+<Warning>
+The background image is shown to **everyone who has not passed the gate** — including minors and
+search engines. Suggest what the site is with branding or atmosphere, but keep the image itself
+suitable for all audiences.
+</Warning>
+
+<Frame caption="Bypass rules, excluded URLs and roles, and debug logging.">
+  <img src="/images/wordpress/settings-advanced.png" alt="The AnonAge Advanced settings tab" />
+</Frame>
+
+<Note>
+**Leave the administrator bypass on.** A gate covering the editor while you are configuring it is
+the single most common cause of "the plugin broke my site".
+</Note>
+
+## Splitting a page
+
+In "Hide the restricted part" mode, you decide where each page is cut. Put your descriptive,
+keyword-carrying content above the marker and the restricted material below it.
+
+Use the **`[anonage_gate]`** shortcode, or WordPress's own **More** block.
+
+<Frame caption="The block editor. Everything above [anonage_gate] is public and indexable; everything below it never leaves the server until the visitor has proved their age.">
+  <img src="/images/wordpress/editor-split-marker.png" alt="A WordPress page in the block editor with the anonage_gate shortcode dividing public content from restricted content" />
+</Frame>
+
+Without a marker the whole of the page content is withheld and only the title and excerpt remain
+public — which is fine, but it wastes the page's SEO value.
+
+## What the visitor sees
+
+<Tabs>
+  <Tab title="Self-declaration">
+    <Frame>
+      <img src="/images/wordpress/gate-confirm.png" alt="The AnonAge age gate asking Are you 21 or over" />
+    </Frame>
+  </Tab>
+  <Tab title="Declined">
+    <Frame caption="With no rejection URL set, a visitor who says no reaches a dead end rather than being bounced to another site.">
+      <img src="/images/wordpress/gate-declined.png" alt="The age gate showing a rejection message" />
+    </Frame>
+  </Tab>
+  <Tab title="Verified mode">
+    <Frame caption="The QR code carries only an opaque session reference. On a phone the visitor gets a tap-through link instead, because you cannot scan the screen you are holding.">
+      <img src="/images/wordpress/gate-verified-qr.png" alt="The age gate showing a QR code to scan with the AnonAge app" />
+    </Frame>
+  </Tab>
+  <Tab title="Through the gate">
+    <Frame>
+      <img src="/images/wordpress/gate-passed.png" alt="The page with its restricted content visible after passing the age gate" />
+    </Frame>
+  </Tab>
+</Tabs>
+
+## Does it actually withhold the content?
+
+Yes — and it is worth proving rather than asserting, because most age-gate plugins only cover the
+page.
+
+Here is a gated page with developer tools open. The entire `<body>` is the site chrome and the
+gate. The page content is not in the document at all:
+
+<Frame caption="Developer tools on a gated page. There is no page content to reveal.">
+  <img src="/images/wordpress/devtools-source.png" alt="Browser developer tools showing that the gated page contains no restricted content" />
+</Frame>
+
+And here is the same page with `position: fixed` unticked — the trick that defeats a cover-only
+gate. The overlay drops away, and what is underneath is the public teaser and a notice. The
+restricted content is still not there:
+
+<Frame caption="The overlay removed by hand. The restricted content was never sent, so there is nothing to uncover.">
+  <img src="/images/wordpress/devtools-overlay-removed.png" alt="The overlay removed in developer tools, revealing only the public teaser and a notice" />
+</Frame>
+
+The restricted half is released only after the server verifies a signed cookie in PHP. Nothing the
+browser can be persuaded to do changes that.
+
+## Search engines
+
+There is no way to withhold content from visitors and still have that content indexed. Serving
+search engines something visitors do not get is **cloaking**, and it is penalised. This plugin does
+not do it.
+
+What you can choose is granularity:
+
+<CardGroup cols={2}>
+  <Card title="Split the page" icon="scissors">
+    Title, description and everything above the marker stay indexable and do the SEO work. Only the
+    restricted part is withheld.
+  </Card>
+  <Card title="Split the site" icon="sitemap">
+    Gate `/gated/` or a set of pages, and keep landing, category and information pages open so the
+    site stays findable.
+  </Card>
+</CardGroup>
+
+"Withhold the whole page" does hide those URLs from search results, because the crawler receives
+the gate and nothing else. Use it only where there is nothing safe to show.
+
+## Caching
+
+<Tabs>
+  <Tab title="Cover / Hide the restricted part">
+    Nothing to configure. The page sent to every visitor is byte-identical: the gate is applied in
+    the browser, and the restricted content is fetched separately over a request that is never
+    cached.
+
+    <Warning>
+    Do **not** add the `anonage_verified` cookie to a "vary the cache on this cookie" list. It
+    would fragment your cache for no benefit.
+    </Warning>
+  </Tab>
+
+  <Tab title="Withhold the whole page">
+    This decision has to be made per visitor, so PHP has to run — and on a full-page cache hit it
+    does not. The plugin therefore marks every gated page as uncacheable, which **WP Rocket, W3
+    Total Cache, WP Super Cache and LiteSpeed** all honour automatically. The settings screen names
+    any it detects on your site.
+
+    <Warning>
+    A CDN in front of your site, **Cloudflare included**, needs its own rule to bypass the cache on
+    those URLs. Without it a cached copy of the real page can be served to everyone.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Membership sites
+
+For a logged-in visitor the result is recorded against their **account**, not just their browser,
+so they verify once rather than once per device.
+
+```php
+/**
+ * Fires when a logged-in member clears the age gate.
+ *
+ * @param int    $user_id User ID.
+ * @param int    $age     Age threshold cleared (13|16|18|21).
+ * @param string $mode    'self_declare' or 'verified'.
+ */
+add_action( 'anonage_member_verified', function ( $user_id, $age, $mode ) {
+    // Your own record-keeping.
+}, 10, 3 );
+```
+
+The state lives in user meta as `_anonage_verified_until`, `_anonage_verified_age` and
+`_anonage_verified_mode`. Delete those three keys to require a member to verify again.
+
+## Verified mode
+
+Verified mode checks the visitor's age against a real identity check. They scan a QR code with the
+free AnonAge app and your site receives a yes or no — never their name, their date of birth or
+their documents.
+
+<Frame caption="The Connection tab. Your secret key stays on the server; the callback URL is shown so you can confirm it is reachable.">
+  <img src="/images/wordpress/settings-connection.png" alt="The AnonAge Connection settings tab" />
+</Frame>
+
+<Steps>
+  <Step title="Create a key">
+    In the AnonAge dashboard, create an API key. The **secret key** and its **signing secret** are
+    shown once — copy both.
+  </Step>
+  <Step title="Paste them into the Connection tab">
+    The environment badge confirms whether it is a test or live key. The signing secret is what
+    proves a result genuinely came from AnonAge; without it every verification is rejected.
+  </Step>
+  <Step title="Check the callback URL">
+    Shown on the same tab. AnonAge posts each signed result there.
+  </Step>
+  <Step title="Switch the mode to Verified">
+    On the Gate tab. Pair it with "Hide the restricted part" or "Withhold the whole page".
+  </Step>
+</Steps>
+
+### How it works
+
+```
+visitor          your site (PHP)                   AnonAge API
+   │                │                                  │
+   │ click Verify   │                                  │
+   │───────────────►│ POST /api/age-verification/session
+   │                │  X-API-Key + callback_url + age  │
+   │                │─────────────────────────────────►│
+   │                │◄──── { session_id, nonce } ──────│
+   │◄── QR payload ─│  (no key, no callback URL)       │
+   │                │                                  │
+   │         (wallet scans and presents)               │
+   │                │◄─── signed callback POST ────────│
+   │                │  verify X-AnonAge-Signature      │
+   │ poll status    │                                  │
+   │───────────────►│                                  │
+   │◄── approved ───│  set signed cookie               │
+```
+
+<AccordionGroup>
+  <Accordion title="Your secret key never reaches the browser" icon="key">
+    The session is opened server-side. The QR code carries only `{ v, session_id, nonce, api_base }`
+    — an opaque reference that is useless to anyone but the wallet presenting it.
+  </Accordion>
+
+  <Accordion title="Results are signed and replay-resistant" icon="signature">
+    The callback carries `X-AnonAge-Signature: t=…,v1=…`, an HMAC-SHA256 over
+    `<timestamp>.<raw body>`. The plugin verifies it against the **raw** request body and rejects
+    anything outside a five-minute window. See [Webhooks](/webhooks) for the scheme.
+  </Accordion>
+
+  <Accordion title="It works even if AnonAge cannot reach you" icon="tower-broadcast">
+    Plenty of sites sit behind a firewall, on a staging domain or on localhost and will never
+    receive an inbound callback. If none arrives within about eight seconds the plugin asks AnonAge
+    for the result instead, up to three times. The callback is the fast path; polling is the
+    reliable one.
+  </Accordion>
+
+  <Accordion title="Sessions expire in five minutes" icon="clock">
+    That is the handshake window, fixed server-side — not the same thing as how long a visitor
+    stays through the gate. The gate shows a countdown and offers a fresh code rather than leaving
+    a dead QR on screen.
+  </Accordion>
+
+  <Accordion title="Sessions open on click, never on page load" icon="hand-pointer">
+    Opening one per pageview would spend a verification for every visitor and every crawler. There
+    is also a per-visitor rate limit, adjustable with the `anonage_session_rate_limit` filter.
+  </Accordion>
+</AccordionGroup>
+
+### Requirements
+
+<Warning>
+**Your site must be served over HTTPS.** AnonAge refuses a plaintext callback URL in production.
+On a local or staging install, put it behind a tunnel such as ngrok or Cloudflare Tunnel — the
+settings screen tells you when this is the problem rather than reporting a generic failure.
+</Warning>
+
+## Reference
+
+### Shortcode
+
+| | |
+|---|---|
+| `[anonage_gate]` | Marks the split point. Everything after it is withheld. |
+
+### Filters and actions
+
+| Hook | Type | Purpose |
+|---|---|---|
+| `anonage_should_gate` | filter | Override the gating decision for the current request. |
+| `anonage_session_rate_limit` | filter | Sessions allowed per visitor per window. Default `10`. |
+| `anonage_session_rate_window` | filter | The window, in seconds. Default `600`. |
+| `anonage_member_verified` | action | A logged-in member cleared the gate. |
+
+```php
+// Never gate a specific landing page, whatever the settings say.
+add_filter( 'anonage_should_gate', function ( $should_gate ) {
+    return is_page( 'welcome' ) ? false : $should_gate;
+} );
+```
+
+### What is stored
+
+| | |
+|---|---|
+| `anonage_verified` cookie | The age threshold cleared, and when it expires. Signed with your site's own key (`wp_salt`) so it cannot be forged. |
+| `_anonage_verified_*` user meta | The same, for logged-in members. |
+
+No personal data, no analytics, no tracking. The self-declaration modes make no external requests
+at all.
+
+<Note>
+The cookie is deliberately readable by JavaScript. The gate has to decide whether to cover the page
+before it paints, and it cannot ask the server without defeating full-page caching. The signature
+is what prevents forgery — and the claim itself is one the visitor made about themselves.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="I cannot see the gate on my own site">
+    Administrators are exempt by default. Open the site in a private window, or turn off the
+    administrator bypass on the Advanced tab.
+  </Accordion>
+
+  <Accordion title="AnonAge could not accept this site as a destination">
+    Your site is not on HTTPS. Verified mode needs an `https://` callback URL.
+  </Accordion>
+
+  <Accordion title="AnonAge rejected the API key">
+    The key was truncated when copied, or it has been revoked. Create a new one — note that this
+    also gives you a new signing secret, which must be updated too.
+  </Accordion>
+
+  <Accordion title="Verification never completes">
+    Check the signing secret is present on the Connection tab. Without it every result is rejected
+    as unsigned. Turn on debug logging on the Advanced tab to see rejections in the PHP error log.
+  </Accordion>
+
+  <Accordion title="Some visitors see the gate and some do not">
+    A page cache is serving mixed copies. This should not happen with the plugin's own modes, but
+    it will if something else on the site varies the HTML by visitor. Do not add the
+    `anonage_verified` cookie to a cache-vary list.
+  </Accordion>
+</AccordionGroup>
+
+## Questions
+
+Email [support@anonage.io](mailto:support@anonage.io).
