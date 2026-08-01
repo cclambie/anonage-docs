@@ -89,7 +89,6 @@
   "footer": {
     "socials": {
       "website": "https://anonage.io",
-      "mastodon": "https://mastodon.social/@anonage",
       "linkedin": "https://www.linkedin.com/company/anonage-anonymous-age-verification/",
       "facebook": "https://www.facebook.com/profile.php?id=61592255774661"
     },
@@ -129,6 +128,10 @@
           {
             "label": "Dashboard",
             "href": "https://anonage.io/console"
+          },
+          {
+            "label": "Mastodon",
+            "href": "https://mastodon.social/@anonage"
           }
         ]
       },
