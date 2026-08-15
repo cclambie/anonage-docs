@@ -36,20 +36,39 @@ That is the entire payload. No name, no date of birth, no address, no country.
 
 | We keep | We do not keep |
 | --- | --- |
-| Age bands (`over18`, `over21`, …) | Identity documents |
-| Date of birth, **only** while the user is under 21 | Selfies or biometric data |
-| Assurance level and verification timestamp | Document numbers |
-| A verification reference | Which sites a user verified on |
+| Age bands (`over13`, `over16`, `over18`, `over21`) | Identity documents |
+| Assurance level and verification timestamp | Selfies or biometric data |
+| A verification reference | **A date of birth — for anyone, at any age** |
+| | Names, addresses, document numbers |
+| | Which sites a user verified on |
 
-The date of birth is retained for under-21s only because an exact age matters near a threshold. It
-is collapsed to age bands automatically on their 21st birthday.
+Four booleans and a timestamp. That is the whole record.
+
+<Warning>
+  Until August 2026 this page said we kept the full date of birth for under-21s and collapsed it to
+  bands on their 21st birthday. That was wrong, and the reason is worth stating: **the job that was
+  meant to do the collapsing was never written**, so "retained temporarily" was in practice
+  "retained indefinitely". Rather than write the job, we deleted the storage. The columns are gone
+  from the schema, and the schema says not to add them back.
+</Warning>
+
+The consequence is a real cost, carried deliberately. A band cannot update itself, so somebody
+verified at 17 has a record saying "not over 18" until they run a new check — which they pay for.
+What makes that safe rather than merely cheaper is an asymmetry: **a `true` band never goes stale,
+because people only get older.** Only a `false` band can become wrong, so the failure mode is
+always "an adult is asked to verify again", never "a minor gets in".
 
 ## When documents are destroyed
 
 **By default, immediately.** As soon as a verification returns a result — approved or rejected —
 AnonAge calls Sumsub's reset endpoint, which destroys the documents and biometrics held for that
-person. This is not a nightly job or a scheduled sweep; it happens on the webhook that delivers
-the result.
+person. It happens on the webhook that delivers the result, not on a schedule.
+
+A verification somebody abandons half-way never returns a result, so nothing on that path would
+ever ask for its documents to be deleted. A weekly sweep covers exactly that case, destroying the
+documents behind anything left unfinished for more than 48 hours. The delay is deliberate: it has
+to be longer than a slow but genuine verification, or we would be deleting documents while someone
+is still using them.
 
 After the reset, the only thing connecting AnonAge to Sumsub for that user is the applicant
 reference. There is nothing behind it.
