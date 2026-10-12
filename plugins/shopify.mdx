@@ -4,32 +4,99 @@ description: "Add an AnonAge age gate to your Shopify store — no code."
 ---
 
 <Note>
-**Coming soon.** The Shopify app is in development. In the meantime you can integrate directly with
-the [API](/quickstart) — a Shopify store can call it from an app proxy or a small backend.
+**In development.** The AnonAge Age Verification app is not in the Shopify App Store yet. Email
+[support@anonage.io](mailto:support@anonage.io) to be told when it is. This page describes the app
+as it will launch.
 </Note>
 
-## What it will do
+## What it does
 
-Install the AnonAge app from the Shopify App Store, pick which products or collections need an age
-check, and the storefront gate appears automatically. No theme editing and no API keys to handle —
-the app provisions and stores them for you.
+The app adds an age gate to your storefront. Visitors confirm they are old enough, or enter their
+year of birth, before they see the store or a restricted product. Nothing about them is sent to
+AnonAge or anyone else: the answer is kept in a single cookie in their own browser, holding the age
+they passed (for example `18`), never a date of birth.
 
-<CardGroup cols={2}>
-  <Card title="Gate by product" icon="tag">
-    Apply the age requirement to specific products, collections, or the whole store.
-  </Card>
-  <Card title="Set the age" icon="calendar">
-    Choose the minimum age per rule — 16, 18, 21, or a custom value.
-  </Card>
-  <Card title="Remembers customers" icon="user-check">
-    A verified shopper is not asked again on their next visit.
-  </Card>
-  <Card title="Usage in one place" icon="chart-line">
-    Verifications from your store roll up into the same Dashboard usage reports.
-  </Card>
-</CardGroup>
+**Age Gate** is US$2 per month, billed through Shopify, with a 14-day free trial. Verified age checks
+through the AnonAge app are coming later as a separate plan.
 
-## Want early access?
+<Warning>
+The age gate is a **self-declaration overlay**. It is a courtesy notice, not a lock: anyone can
+answer untruthfully, and a visitor can remove an overlay with browser developer tools or by turning
+JavaScript off. If the law requires you to verify ages, a self-declared answer is not enough on its
+own.
+</Warning>
 
-Email [support@anonage.io](mailto:support@anonage.io) and we will let you know when the app enters
-beta.
+## Set up
+
+<Steps>
+  <Step title="Install and approve the plan">
+    The 14-day trial starts when you approve it. Uninstalling before it ends costs nothing.
+  </Step>
+  <Step title="Turn the gate on in your theme">
+    The app's home page has a button that opens the theme editor at **App embeds** with the gate
+    selected. Switch it on and save.
+  </Step>
+  <Step title="Choose where it applies">
+    The whole store, or selected products and collections. Tagging a product `age-restricted` is the
+    quickest way to gate it; you can also pick products and collections directly.
+  </Step>
+  <Step title="Check it as a visitor">
+    Open your store in a private window. Once you have answered the gate in a browser it stays out of
+    your way there for as long as you chose to remember the answer, so a normal window will not show
+    it again.
+  </Step>
+</Steps>
+
+## Restricted products in listings
+
+When the gate covers selected products, visitors who have not passed it also see those products
+treated differently wherever they are listed. You choose the treatment separately for the home page
+and for everywhere else (collections, search, recommendations and menus):
+
+| Treatment | What visitors see |
+|---|---|
+| Hide them | The product is left out of the listing. Default on the home page. |
+| Blur and label them | The card is blurred and labelled "Age restricted: 18+". Default elsewhere. |
+| Grey them out | The card is shown in grey, faded. |
+| Show them normally | No change. |
+
+Blurred and greyed products still open when clicked, behind the gate.
+
+### Use an obscured featured image
+
+Blurring a card on the page does not hide the photo itself: the real image is still the one your
+store sends, and anyone can open it in a new tab. If the photo must not be seen in listings at all,
+give the product a different **featured image**.
+
+The [restricted image maker](https://anonage.io/tools/restricted-image) turns a product photo into a
+blurred or pixelated, labelled version. It works in your browser and does not upload your photo.
+The saved image is built from a version a few dozen pixels wide, so the detail is not hidden in it:
+it is not there.
+
+<Steps>
+  <Step title="Make the image">
+    Open the [restricted image maker](https://anonage.io/tools/restricted-image), choose your photo,
+    adjust it and download it.
+  </Step>
+  <Step title="Add it to the product">
+    In Shopify admin, open the product and add the image under **Media**.
+  </Step>
+  <Step title="Make it the first image">
+    Drag it to the first position. The first image is the featured image used on the home page,
+    collections and search. Keep your real photos after it; they show on the product page, behind
+    the gate.
+  </Step>
+</Steps>
+
+<Tip>
+If you sell through Google, Meta or other sales channels, they are sent the featured image too, and
+some reject placeholder or obscured product images. Check their image rules before switching.
+</Tip>
+
+## Limits worth knowing
+
+- Picked collections contribute their first 50 products to the listing treatment, and the tag is
+  checked across the first 250 products in your store. Products past those limits are listed
+  normally, though their own pages are still gated.
+- Product cards are recognised by the list item a theme puts around each one, as Dawn and most
+  themes do. A theme that lists products some other way is left alone.
