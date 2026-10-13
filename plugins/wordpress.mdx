@@ -1,10 +1,16 @@
 ---
 title: "WordPress"
-description: "Put an age gate on any WordPress site — free self-declaration out of the box, or a real identity-backed check."
+description: "Put an age gate on any WordPress site — free self-declaration from the WordPress.org plugin directory, with identity-backed checks to follow."
 ---
 
 The AnonAge plugin puts an age gate in front of your WordPress content. It works immediately with
-no account, no API key and no cost, and upgrades to a real identity-backed check when you need one.
+no account, no API key and no cost.
+
+<Note>
+**Available now** from the [WordPress.org plugin directory](https://wordpress.org/plugins/anonage-age-verification/)
+(version 0.6.1). Self-declaration and all three enforcement levels are in this release. **Verified
+mode is not enabled yet**; the [section below](#verified-mode) describes how it will work.
+</Note>
 
 <CardGroup cols={2}>
   <Card title="Free to start" icon="gift">
@@ -25,7 +31,9 @@ no account, no API key and no cost, and upgrades to a real identity-backed check
 
 <Steps>
   <Step title="Add the plugin">
-    Upload it to `/wp-content/plugins/`, or install it from the Plugins screen, then activate it.
+    In wp-admin go to **Plugins → Add New**, search for **AnonAge Age Verification**, then install
+    and activate it. Or download it from
+    [wordpress.org/plugins/anonage-age-verification](https://wordpress.org/plugins/anonage-age-verification/).
     Requires WordPress 6.0 and PHP 7.4 or newer.
   </Step>
   <Step title="Open the settings">
@@ -48,7 +56,7 @@ other achieves nothing**.
     |---|---|---|---|
     | **Self-declaration — confirm** | Clicks "I am over 18" | No | Free |
     | **Self-declaration — year of birth** | Types their year of birth; only asked the month, and then the day, if the year alone does not settle it | No | Free |
-    | **Verified** | Scans a QR code with the AnonAge app, or taps through on a phone | Yes | Per verification |
+    | **Verified** (coming soon) | Scans a QR code with the AnonAge app, or taps through on a phone | Yes | Per verification |
 
     Self-declaration is a statement by the visitor, not a check. It is what most sites run and it
     is a reasonable default, but it is not "highly effective age assurance" under the UK Online
@@ -289,6 +297,11 @@ The state lives in user meta as `_anonage_verified_until`, `_anonage_verified_ag
 `_anonage_verified_mode`. Delete those three keys to require a member to verify again.
 
 ## Verified mode
+
+<Note>
+**Not in the current release.** Verified mode is switched off in 0.6.x while the production API is
+being set up. This section describes how it will work, so you can plan for it.
+</Note>
 
 Verified mode checks the visitor's age against a real identity check. They scan a QR code with the
 free AnonAge app and your site receives a yes or no — never their name, their date of birth or
